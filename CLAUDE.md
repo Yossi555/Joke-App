@@ -24,7 +24,7 @@
 - הקוד בשורש, לפי סעיף 7 ב-spec/ARCHITECTURE.md.
 
 ## Git ו-GitHub
-- ריפו ציבורי ב-GitHub: https://github.com/Yossi555/joke-app (משתמש Yossi555), ענף `main`.
+- ריפו ציבורי ב-GitHub: https://github.com/Yossi555/Joke-App (משתמש Yossi555), ענף `main`.
 - את הדחיפה אני עושה בעצמי ב-GitHub Desktop. Claude עושה commit, ומנחה אותי מתי לדחוף.
 - לפני כל commit: מוודאים ש-.gitignore, ‏.env.example ו-.claude/settings.json קיימים.
 
