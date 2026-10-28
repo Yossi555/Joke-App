@@ -53,3 +53,5 @@ MILESTONES.md (Milestone 3), ARCHITECTURE.md (סעיפים 1, 7, והנחות), 
 - בלי רשת: הדף והלוגו נטענים מהמטמון.
 
 הבדיקה בתוך הדפדפן המובנה של האפליקציה לא עבדה, כי הוא לא מאפשר רישום service worker. לכן Chrome.
+
+נפרס ב-Vercel (commit c53c531): https://joke-app-taupe.vercel.app. יוסי דחף, בדק את תנאי ההשלמה במחשב ובטלפון, ואישר את המיילסטון.
