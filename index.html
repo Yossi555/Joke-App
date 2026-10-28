@@ -209,10 +209,12 @@
         body: JSON.stringify({ topic }),
       });
       const data = await res.json();
-      if (!res.ok || typeof data.joke !== "string") {
-        throw new Error(data.error || "bad response");
+      if (res.ok && typeof data.joke === "string") {
+        setState("joke", data.joke, "עוד בדיחה!");
+        return;
       }
-      setState("joke", data.joke, "עוד בדיחה!");
+      const text = typeof data.error === "string" && data.error ? data.error : "משהו השתבש. נסו שוב בעוד רגע.";
+      setState("error", text, "לנסות שוב");
     } catch (err) {
       console.error(err);
       setState("error", "משהו השתבש. נסו שוב בעוד רגע.", "לנסות שוב");
