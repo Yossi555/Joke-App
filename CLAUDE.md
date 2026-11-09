@@ -14,8 +14,16 @@
 - מפתח ה-production שמור אצלי ב-Vercel (Secret, ב-Production וב-Preview).
 - מפתח ה-dev אני מדביק בעצמי ב-.env.local. Claude לא קורא, לא כותב ולא פותח את .env או .env.* בשום דרך, גם לא דרך הטרמינל.
 - `.claude/settings.json` חוסם את הקריאה של .env ושל .env.*.
-- `.env.example` מכיל רק את השורה `OPENAI_API_KEY=`, בלי ערך ובלי הערות.
+- `.env.example` מכיל רק את השורות `OPENAI_API_KEY=` ו-`SUPABASE_SECRET_KEY=`, בלי ערכים ובלי הערות.
+- המפתח הסודי של Supabase שמור אצלי ב-Vercel (Secret, ב-Production וב-Preview). אני שם אותו בעצמי, ו-Claude לא מבקש אותו.
 - `.gitignore` מתעלם מ-.env, מ-.env.*, מ-.vercel ומ-node_modules, עם החריגה `!.env.example`.
+
+## שמירה: Supabase
+- הנתונים נשמרים ב-Supabase, בטבלה `public.jokes`.
+- רק הפונקציות בתיקיית `api/` מדברות עם Supabase, דרך הלקוח היחיד ב-`lib/supabase.js`. הכתובת מ-`process.env.SUPABASE_URL`, והמפתח מ-`process.env.SUPABASE_SECRET_KEY`.
+- הדף מדבר רק עם `/api`. אין בו לקוח של Supabase, כתובת של Supabase או מפתח.
+- הטבלה נעולה לשרת: RLS מופעל בלי אף policy, והרשאות ל-`service_role` בלבד.
+- ה-SQL נשמר גם ב-`db/`, ומוצג לי לפני כל הרצה.
 
 ## מבנה התיקיות
 - `spec/`: שבעת מסמכי הספק (PRD, MVP, product-10-definitions, MILESTONES, ARCHITECTURE, tech-stack, DESIGN), ואיתם course-stack.md ותמונות הייחוס (wireframes, mockups, style-guide).

@@ -1,7 +1,7 @@
 # MILESTONES: בדיחה בלחיצה
 כלל: בסוף כל Milestone ה-AI עוצר, וממתין לבדיקה ולאישור מפורש שלי לפני שהוא ממשיך.
 
-שלושה Milestones, כשעתיים בסך הכל. את המפתחות של OpenAI אף פעם לא נותנים ל-Claude: מפתח ה-production עובר ישר מ-OpenAI ל-Vercel, ומפתח ה-dev מודבק ביד ב-.env.local.
+ארבעה Milestones. שלושת הראשונים כשעתיים בסך הכל. את המפתחות של OpenAI אף פעם לא נותנים ל-Claude: מפתח ה-production עובר ישר מ-OpenAI ל-Vercel, ומפתח ה-dev מודבק ביד ב-.env.local.
 
 איפה מריצים: הבחירה שלי. אפשר לבדוק כל Milestone בכתובת של Vercel אחרי push, ואפשר גם להריץ במחשב עם vercel dev. הקוד זהה בשני המקרים.
 
@@ -69,3 +69,52 @@
   3. בתוך האפליקציה המותקנת מגיעה בדיחה חדשה בכל לחיצה.
   4. ב-Application ואז Cache Storage אין אף כתובת של /api.
   5. שינוי קטן בטקסט, push, ורענון: השינוי מופיע.
+
+## Milestone 4: האפליקציה זוכרת
+- המטרה: בדיחות ה-AI נשמרות ב-Supabase, אפשר לצחוק עליהן, ורואים את המצחיקות ביותר. רק השרת ניגש לטבלה.
+- מה רואים בדף:
+  - מתחת לכל בדיחת AI: כפתור "צחקתי" עם מונה. אחרי לחיצה הכפתור ננעל.
+  - רשימת "הכי מצחיקות": חמש הבדיחות עם הכי הרבה צחוקים, רק כאלה עם צחוק אחד לפחות. היא מתעדכנת אחרי כל צחוק, בלי polling.
+- הטבלה, דרך המחבר של Supabase:
+  - אם יש יותר מפרויקט אחד, Claude שואל באיזה לעבוד.
+  - migration בשם `create_jokes`, עם הטבלה `public.jokes` וחמש עמודות:
+    - `id` מסוג uuid, מפתח ראשי, ברירת מחדל מ-`gen_random_uuid()`.
+    - `created_at` מסוג timestamptz, ברירת מחדל מ-`now()`.
+    - `topic` מסוג text.
+    - `text` מסוג text, חובה.
+    - `laughs` מסוג integer, חובה, ברירת מחדל 0.
+- הנעילה, כדי שרק השרת ייגש לטבלה:
+  - RLS מופעל, בלי אף policy.
+  - `grant select, insert, update` על הטבלה ל-`service_role` בלבד.
+  - `revoke all` מ-`anon` ומ-`authenticated`.
+- ספירת הצחוקים, כדי ששתי לחיצות באותו רגע לא ידרסו זו את זו:
+  - הפונקציה `public.add_laugh` מקבלת `joke_id` מסוג uuid, מוסיפה 1 למונה, ומחזירה את המספר החדש.
+  - בתוכה: `security invoker`, ‏`search_path` ריק, ושמות מלאים כמו `public.jokes`.
+  - הרשאות: `revoke execute` מ-`public`, ‏`anon` ו-`authenticated`, ו-`grant execute` ל-`service_role`.
+- עצירה ראשונה, סביב ה-SQL:
+  - ה-SQL נשמר גם בקובץ db/create_jokes.sql, ו-Claude מציג לי אותו לפני ההרצה.
+  - אחרי ההרצה Claude מריץ `get_advisors`, מסביר בעברית מה נמצא, ועוצר. אני בודק שהטבלה נעולה.
+- הקוד בשרת:
+  - לקוח אחד בקובץ lib/supabase.js, מהחבילה `@supabase/supabase-js`, ב-dependencies. הכתובת מ-`process.env.SUPABASE_URL`, והמפתח מ-`process.env.SUPABASE_SECRET_KEY`.
+  - api/joke.js שומרת כל בדיחת AI בטבלה, ומחזירה גם את ה-id שלה. אם השמירה נכשלת, הבדיחה עדיין מגיעה למשתמש, והשגיאה נרשמת ב-console.error.
+  - api/laugh.js מקבלת POST עם id, בודקת שזה uuid, וקוראת ל-`add_laugh` דרך rpc.
+  - api/top.js מחזירה את רשימת "הכי מצחיקות".
+  - הדף מדבר רק עם /api. שום קריאה ל-Supabase מהדפדפן.
+- עצירה שנייה, לפני הדחיפה:
+  - Claude עוצר לפני הדחיפה, ולא מבקש את המפתח.
+  - ביד, ב-Vercel, ב-Environment Variables, בסביבות Production ו-Preview: `SUPABASE_SECRET_KEY` מסוג Secret, ו-`SUPABASE_URL`.
+  - רק אז push. המשתנים כבר שם לפני הפריסה, אז אין צורך ב-Redeploy.
+- הרצה מקומית, רשות: מוסיפים ביד ל-.env.local את `SUPABASE_URL` ואת `SUPABASE_SECRET_KEY`. לא דרך Claude.
+- התוצר המצופה: לוחצים "צחקתי", המונה עולה, והבדיחה נכנסת ל"הכי מצחיקות". אחרי רענון היא עדיין שם.
+- תנאי השלמה (Definition of Done):
+  1. בדיחה חדשה מופיעה עם כפתור "צחקתי" ומונה 0, ובטבלה יש שורה עם הנושא והטקסט שלה.
+  2. לחיצה מעלה את המונה ב-1, והכפתור ננעל.
+  3. "הכי מצחיקות" מציגה עד חמש בדיחות, מהמצחיקה ביותר, ורק כאלה עם צחוק אחד לפחות.
+  4. הרשימה מתעדכנת מיד אחרי צחוק. בלשונית Network יש בקשה אחת ל-/api/top לכל צחוק, ואין בקשות חוזרות בלי לחיצה.
+  5. שתי בקשות במקביל ל-/api/laugh על אותה בדיחה מעלות את המונה ב-2.
+  6. בקשה ל-/api/laugh עם id שאינו uuid מחזירה 400, והטבלה לא משתנה.
+  7. הטבלה נעולה: ל-`anon` ול-`authenticated` אין גישה לטבלה ולא ל-`add_laugh`, RLS מופעל, ואין אף policy. הממצאים של `get_advisors` הוסברו בעברית.
+  8. כשהשמירה נכשלת, הבדיחה עדיין מגיעה לדף, וב-Logs יש שורה אדומה.
+  9. בלשונית Network אין בקשה ל-supabase.co, וחיפוש בקוד הדף לא מוצא `sb_secret_` ולא `service_role`.
+  10. בריפו יש .env.example עם השורות `OPENAI_API_KEY=` ו-`SUPABASE_SECRET_KEY=` בלבד, בלי ערכים.
+  11. ב-Application ואז Cache Storage יש רק את המטמון של הגרסה החדשה, ואין בו אף כתובת של /api.
