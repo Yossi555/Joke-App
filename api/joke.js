@@ -1,4 +1,7 @@
+import { getSupabase } from "../lib/supabase.js";
+
 const MAX_TOPIC = 100;
+const SAVE_TIMEOUT_MS = 5000;
 const OPENAI_URL = "https://api.openai.com/v1/responses";
 const DEFAULT_MODEL = "gpt-5";
 const TIMEOUT_MS = 30000;
@@ -58,6 +61,23 @@ function extractText(data) {
     }
   }
   return parts.join("").trim();
+}
+
+// A failed save must never cost the user the joke, so this always resolves.
+async function saveJoke(topic, text) {
+  try {
+    const { data, error } = await getSupabase()
+      .from("jokes")
+      .insert({ topic: topic || null, text })
+      .select("id")
+      .single()
+      .abortSignal(AbortSignal.timeout(SAVE_TIMEOUT_MS));
+    if (error) throw error;
+    return data.id;
+  } catch (err) {
+    console.error(`joke save error: code=${err?.code ?? "-"} message=${err?.message ?? "unknown"}`);
+    return null;
+  }
 }
 
 export default {
@@ -132,6 +152,7 @@ export default {
       return json({ error: MESSAGES.general }, 502);
     }
 
-    return json({ joke });
+    const id = await saveJoke(topic, joke);
+    return json({ joke, id });
   },
 };
