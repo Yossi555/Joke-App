@@ -23,6 +23,9 @@
     --error-bg: #FFE8EC;
     --hint: #756B92;
     --purple: #8B5CF6;
+    --purple-soft: #D9CCFF;
+    --mint: #1FCB8C;
+    --pink: #FF5FA8;
     --ui: "Fredoka", system-ui, sans-serif;
     --hand: "Playpen Sans Hebrew", "Fredoka", system-ui, sans-serif;
   }
@@ -44,7 +47,7 @@
   main {
     max-width: 440px;
     margin: 0 auto;
-    padding: 28px 18px 24px;
+    padding: 28px 18px calc(110px + env(safe-area-inset-bottom));
     display: flex;
     flex-direction: column;
     gap: 14px;
@@ -60,7 +63,7 @@
     font-weight: 500;
   }
 
-  form { display: flex; flex-direction: column; gap: 14px; }
+  form, .view { display: flex; flex-direction: column; gap: 14px; }
 
   label { font-size: 18px; font-weight: 600; }
 
@@ -154,41 +157,179 @@
     overflow-wrap: anywhere;
   }
 
-  .laugh-btn {
+  /* Vote (Milestone 6): two pills, one per direction, each with its count. */
+  .vote { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .vote-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+  .card .vote { align-items: flex-start; }
+  .card .vote-row { justify-content: flex-start; }
+  .vote-btn {
     width: auto;
-    min-height: 48px;
-    padding-inline: 22px;
+    min-height: 44px;
+    padding-inline: 14px 16px;
     display: inline-flex;
     align-items: center;
-    gap: 10px;
-    font: 600 18px var(--ui);
+    gap: 7px;
+    font: 700 16px var(--ui);
     color: var(--ink);
-    background: var(--sun);
-    box-shadow: 0 5px 0 var(--ink);
+    background: var(--paper);
+    border: 2.5px solid var(--ink);
+    box-shadow: 0 4px 0 var(--ink);
+    transform: none;
   }
-  .laugh-btn[hidden], .laugh-error[hidden], .top[hidden] { display: none; }
-  .laugh-btn:active,
-  .laugh-btn:disabled {
-    transform: translateY(3px) rotate(-1deg);
-    box-shadow: 0 2px 0 var(--ink);
-  }
-  .laugh-btn:disabled { background: var(--paper); cursor: default; }
-  .laugh-count { font-weight: 700; }
-  .laugh-error { margin: 0; font-size: 15px; font-weight: 600; color: var(--error); }
+  .vote-btn svg { flex: none; width: 20px; height: 20px; }
+  .vote-btn svg path { fill: none; }
+  .vote-btn[aria-pressed="true"] svg path { fill: currentColor; }
+  .vote-btn.like[aria-pressed="true"] { background: var(--mint); }
+  .vote-btn.dislike[aria-pressed="true"] { background: var(--pink); }
+  .vote-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+  .vote-btn:disabled { transform: none; box-shadow: 0 4px 0 var(--ink); opacity: .6; cursor: wait; }
+  .vote-count { min-width: 1ch; }
+  .vote-error { margin: 0; font-size: 15px; font-weight: 600; color: var(--error); }
 
-  .top {
-    margin-top: 10px;
-    padding: 16px 18px;
+  .more-link {
+    align-self: center;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ink);
+    text-underline-offset: 4px;
+  }
+  .more-link:focus-visible { outline: 4px solid var(--blue); outline-offset: 3px; border-radius: 6px; }
+
+  /* Community and liked (Milestone 6). */
+  .page-head { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
+  .page-head h1 { margin: 0; font-size: 34px; font-weight: 700; }
+  .page-head h1:focus { outline: none; }
+  .head-icon {
+    flex: none;
+    width: 46px;
+    height: 46px;
+    display: grid;
+    place-items: center;
+    background: var(--paper);
+    border: 3px solid var(--ink);
+    border-radius: 14px;
+    box-shadow: 3px 3px 0 var(--ink);
+    transform: rotate(-4deg);
+  }
+  .head-icon svg { width: 26px; height: 26px; }
+  .page-head + .intro { text-align: start; margin-top: -6px; }
+
+  .sorts { background: var(--paper); align-self: center; width: 100%; max-width: 300px; }
+
+  .cards {
+    margin: 4px 0 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .card {
+    position: relative;
+    padding: 18px 16px 16px;
     background: var(--paper);
     border: 3px solid var(--ink);
     border-radius: 22px;
-    box-shadow: 4px 4px 0 var(--ink);
+    box-shadow: 5px 5px 0 var(--ink);
     transform: rotate(0.6deg);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
   }
-  .top h2 { margin: 0 0 10px; font-size: 22px; font-weight: 700; text-align: center; }
-  .top ol { margin: 0; padding-inline-start: 24px; display: flex; flex-direction: column; gap: 12px; }
-  .top-text { display: block; font: 500 18px/1.5 var(--hand); overflow-wrap: anywhere; }
-  .top-laughs { display: block; font-size: 14px; font-weight: 600; color: var(--ink-soft); }
+  .card:nth-child(even) { transform: rotate(-0.6deg); }
+  .card-text { margin: 0; font: 500 19px/1.55 var(--hand); overflow-wrap: anywhere; }
+  .card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--ink-soft);
+  }
+  .chip {
+    padding: 1px 10px;
+    font-weight: 600;
+    color: var(--ink);
+    border: 2px dashed var(--ink-soft);
+    border-radius: 999px;
+    overflow-wrap: anywhere;
+  }
+  .byline { overflow-wrap: anywhere; }
+  .rank {
+    position: absolute;
+    inset-block-start: -14px;
+    inset-inline-start: -10px;
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    font: 700 18px var(--ui);
+    color: var(--ink);
+    background: var(--purple-soft);
+    border: 3px solid var(--ink);
+    border-radius: 50%;
+    transform: rotate(-6deg);
+  }
+  .rank-1 { color: #fff; background: var(--red); }
+  .rank-2 { background: var(--blue); }
+  .rank-3 { background: var(--mint); }
+
+  .list-status { margin: 6px 0 0; text-align: center; font-size: 17px; font-weight: 500; color: var(--ink-soft); }
+  .list-status.is-error { color: var(--error); font-weight: 600; }
+  .retry { align-self: center; width: auto; padding-inline: 26px; }
+
+  .locked {
+    margin-top: 10px;
+    padding: 24px 20px;
+    background: var(--paper);
+    border: 3px solid var(--ink);
+    border-radius: 26px;
+    box-shadow: 6px 6px 0 var(--ink);
+    transform: rotate(-0.8deg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    text-align: center;
+  }
+  .locked img { width: 110px; height: auto; }
+  .locked h2 { margin: 0; font-size: 22px; font-weight: 700; }
+  .locked p { margin: 0; font-size: 17px; font-weight: 500; color: var(--ink-soft); }
+
+  /* Tabs (Milestone 6): one floating white card at the bottom. */
+  .tabbar {
+    position: fixed;
+    inset-inline: 0;
+    inset-block-end: calc(10px + env(safe-area-inset-bottom));
+    z-index: 10;
+    width: calc(100% - 28px);
+    max-width: 420px;
+    margin-inline: auto;
+    padding: 6px;
+    display: flex;
+    gap: 6px;
+    background: var(--paper);
+    border: 3px solid var(--ink);
+    border-radius: 24px;
+    box-shadow: 0 5px 0 var(--ink);
+  }
+  .tabbar a {
+    flex: 1;
+    min-height: 58px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    font: 600 15px var(--ui);
+    color: var(--ink);
+    text-decoration: none;
+    border-radius: 18px;
+  }
+  .tabbar a svg { width: 26px; height: 26px; }
+  .tabbar a[aria-current="page"] { color: #fff; background: var(--ink); }
+  .tabbar a:focus-visible { outline: 4px solid var(--blue); outline-offset: 2px; }
 
   footer {
     margin-top: 6px;
@@ -357,38 +498,88 @@
     </button>
   </header>
 
-  <img class="logo" src="assets/logo.svg" alt="בדיחה בלחיצה">
-  <p class="intro">כותבים נושא, לוחצים, וצוחקים. בלי נושא, מקבלים בדיחה כללית.</p>
+  <section class="view" id="view-joke" aria-label="בדיחה">
+    <img class="logo" src="assets/logo.svg" alt="בדיחה בלחיצה">
+    <p class="intro">כותבים נושא, לוחצים, וצוחקים. בלי נושא, מקבלים בדיחה כללית.</p>
 
-  <form id="form">
-    <label for="topic">על מה הבדיחה?</label>
-    <input id="topic" name="topic" type="text" maxlength="100" placeholder="למשל: חתולים" autocomplete="off">
-    <button id="go" type="submit">תנו לי בדיחה!</button>
-  </form>
+    <form id="form">
+      <label for="topic">על מה הבדיחה?</label>
+      <input id="topic" name="topic" type="text" maxlength="100" placeholder="למשל: חתולים" autocomplete="off">
+      <button id="go" type="submit">תנו לי בדיחה!</button>
+    </form>
 
-  <section class="bubble" id="bubble" data-state="idle">
-    <img class="mascot mascot-idle" src="assets/mascot-idle.svg" alt="">
-    <img class="mascot mascot-think" src="assets/mascot-think.svg" alt="">
-    <img class="mascot mascot-joke" src="assets/mascot-joke.svg" alt="">
-    <img class="mascot mascot-error" src="assets/mascot-error.svg" alt="">
-    <p id="msg" aria-live="polite">לוחצים על הכפתור, והבדיחה מופיעה כאן</p>
-    <p class="for-you" id="for-you" hidden></p>
-    <button class="laugh-btn" id="laugh" type="button" hidden>צחקתי <span class="laugh-count" id="laugh-count">0</span></button>
-    <p class="laugh-error" id="laugh-error" role="status" hidden></p>
+    <section class="bubble" id="bubble" data-state="idle">
+      <img class="mascot mascot-idle" src="assets/mascot-idle.svg" alt="">
+      <img class="mascot mascot-think" src="assets/mascot-think.svg" alt="">
+      <img class="mascot mascot-joke" src="assets/mascot-joke.svg" alt="">
+      <img class="mascot mascot-error" src="assets/mascot-error.svg" alt="">
+      <p id="msg" aria-live="polite">לוחצים על הכפתור, והבדיחה מופיעה כאן</p>
+      <p class="for-you" id="for-you" hidden></p>
+      <div id="joke-vote"></div>
+    </section>
+
+    <a class="more-link" href="#community">לבדיחות של כולם ←</a>
   </section>
 
-  <section class="top" id="top" hidden>
-    <h2>הכי מצחיקות</h2>
-    <ol id="top-list"></ol>
+  <section class="view" id="view-community" hidden>
+    <div class="page-head">
+      <span class="head-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </span>
+      <h1 tabindex="-1">הקהילה</h1>
+    </div>
+    <p class="intro">בדיחות שכולם ביקשו. מדרגים, והטובות עולות למעלה.</p>
+    <div class="seg sorts" role="group" aria-label="מיון">
+      <button type="button" id="sort-new" aria-pressed="true">חדשות</button>
+      <button type="button" id="sort-top" aria-pressed="false">הכי מצחיקות</button>
+    </div>
+    <p class="list-status" id="community-status" role="status"></p>
+    <button class="retry secondary" id="community-retry" type="button" hidden>לנסות שוב</button>
+    <ol class="cards" id="community-list"></ol>
+  </section>
+
+  <section class="view" id="view-liked" hidden>
+    <div class="page-head">
+      <span class="head-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+      </span>
+      <h1 tabindex="-1">אהבתי</h1>
+    </div>
+    <p class="intro">כל הבדיחות שאהבתם, במקום אחד.</p>
+    <div class="locked" id="liked-locked" hidden>
+      <img src="assets/mascot-idle.svg" alt="">
+      <h2>הבדיחות שאהבתם יחכו כאן</h2>
+      <p>כדי לשמור בדיחות שאהבתם צריך חשבון. זה לוקח רגע.</p>
+      <button id="liked-login" type="button">כניסה</button>
+    </div>
+    <p class="list-status" id="liked-status" role="status"></p>
+    <button class="retry secondary" id="liked-retry" type="button" hidden>לנסות שוב</button>
+    <ol class="cards" id="liked-list"></ol>
   </section>
 
   <footer>מיישם AI ואוטומציה · 53500</footer>
 </main>
 
+<nav class="tabbar" aria-label="לשוניות">
+  <a href="#joke" data-view="joke">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/></svg>
+    בדיחה
+  </a>
+  <a href="#community" data-view="community">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    קהילה
+  </a>
+  <a href="#liked" data-view="liked">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+    אהבתי
+  </a>
+</nav>
+
 <dialog class="sheet" id="login-dialog" aria-labelledby="login-title">
   <div class="sheet-body">
     <button class="sheet-close" type="button" data-close aria-label="סגירה">×</button>
     <h2 id="login-title">כניסה</h2>
+    <p class="sheet-note" id="login-reason" hidden></p>
     <div class="seg" role="group" aria-label="כניסה או הרשמה">
       <button type="button" id="mode-signin" aria-pressed="true">כניסה</button>
       <button type="button" id="mode-signup" aria-pressed="false">הרשמה</button>
@@ -440,12 +631,32 @@
   const go = document.getElementById("go");
   const bubble = document.getElementById("bubble");
   const msg = document.getElementById("msg");
-  const laugh = document.getElementById("laugh");
-  const laughCount = document.getElementById("laugh-count");
-  const laughError = document.getElementById("laugh-error");
-  const topSection = document.getElementById("top");
-  const topList = document.getElementById("top-list");
   const forYou = document.getElementById("for-you");
+  const jokeVote = document.getElementById("joke-vote");
+
+  const views = {
+    joke: document.getElementById("view-joke"),
+    community: document.getElementById("view-community"),
+    liked: document.getElementById("view-liked"),
+  };
+  const tabs = document.querySelectorAll(".tabbar a");
+  const sortNew = document.getElementById("sort-new");
+  const sortTop = document.getElementById("sort-top");
+  const lists = {
+    community: {
+      list: document.getElementById("community-list"),
+      status: document.getElementById("community-status"),
+      retry: document.getElementById("community-retry"),
+    },
+    liked: {
+      list: document.getElementById("liked-list"),
+      status: document.getElementById("liked-status"),
+      retry: document.getElementById("liked-retry"),
+    },
+  };
+  const likedLocked = document.getElementById("liked-locked");
+  const likedLogin = document.getElementById("liked-login");
+  const loginReason = document.getElementById("login-reason");
 
   const accountBtn = document.getElementById("account-btn");
   const accountAvatar = document.getElementById("account-avatar");
@@ -478,9 +689,40 @@
   const RELOGIN = "צריך להתחבר שוב.";
   const GENERAL = "משהו השתבש. נסו שוב בעוד רגע.";
 
-  let currentJokeId = null;
-  let topRequest = 0;
+  const NEED_ACCOUNT = "כדי לדרג בדיחות צריך חשבון.";
+  const NEED_ACCOUNT_LIKED = "כדי לשמור בדיחות שאהבתם צריך חשבון.";
+  const VOTE_ERROR = "לא הצלחנו לשמור את הדירוג. נסו שוב.";
+  const LIST_ERROR = "לא הצלחנו לטעון את הרשימה.";
+  const VIEWS = ["joke", "community", "liked"];
+
+  const THUMB_UP = [
+    "M7 10v12",
+    "M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z",
+  ];
+  const THUMB_DOWN = [
+    "M17 14V2",
+    "M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z",
+  ];
+
   let loginMode = "signin";
+  let currentView = null;
+  let communityMode = "new";
+  const listRequest = { community: 0, liked: 0 };
+
+  // One state per joke, shared by every vote widget that shows it.
+  const voteState = new Map();
+  const busy = new Set();
+  const inflight = new Map();
+  let pendingVote = null;
+  let lastUserId;
+
+  const authReady = window.Auth
+    ? Auth.ready().catch((err) => console.error(err))
+    : Promise.resolve();
+
+  function signedIn() {
+    return Boolean(window.Auth && Auth.session());
+  }
 
   // Every call to /api goes through here, with the token when there is one.
   // A 401 with auth_required on a call that carried a token: sign out on the spot.
@@ -514,70 +756,295 @@
     forYou.textContent = authorName ? `נכתבה עכשיו בשבילך, ${authorName}` : "";
     forYou.hidden = !authorName;
 
-    // A joke that was not saved has no id, so there is nothing to count.
-    currentJokeId = jokeId;
-    laugh.hidden = !jokeId;
-    laugh.disabled = false;
-    laughCount.textContent = "0";
-    laughError.hidden = true;
+    // A joke that was not saved has no id, so there is nothing to vote on.
+    if (jokeId && !voteState.has(jokeId)) voteState.set(jokeId, { likes: 0, dislikes: 0, my_vote: 0 });
+    jokeVote.replaceChildren(...(jokeId ? [createVote(jokeId)] : []));
   }
 
-  function renderTop(jokes) {
-    topList.replaceChildren(...jokes.map((joke) => {
-      const item = document.createElement("li");
-      const text = document.createElement("span");
-      text.className = "top-text";
-      text.textContent = joke.text;
-      const laughs = document.createElement("span");
-      laughs.className = "top-laughs";
-      laughs.textContent = joke.laughs === 1 ? "צחוק אחד" : `${joke.laughs} צחוקים`;
-      item.append(text, laughs);
-      return item;
-    }));
-    topSection.hidden = jokes.length === 0;
-  }
+  // ---- Vote widget ----
 
-  async function loadTop() {
-    const request = ++topRequest;
-    try {
-      const { res, data } = await api("/api/top");
-      if (request === topRequest && res.ok && Array.isArray(data.top)) renderTop(data.top);
-    } catch (err) {
-      console.error(err);
+  function icon(paths) {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("stroke", "currentColor");
+    svg.setAttribute("stroke-width", "2.2");
+    svg.setAttribute("stroke-linecap", "round");
+    svg.setAttribute("stroke-linejoin", "round");
+    svg.setAttribute("aria-hidden", "true");
+    for (const d of paths) {
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      path.setAttribute("d", d);
+      svg.append(path);
     }
+    return svg;
   }
 
-  laugh.addEventListener("click", async () => {
-    const id = currentJokeId;
-    laugh.disabled = true;
-    laughError.hidden = true;
+  function voteButton(kind, label, paths) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `vote-btn ${kind}`;
+    const text = document.createElement("span");
+    text.textContent = label;
+    const count = document.createElement("span");
+    count.className = "vote-count";
+    button.append(icon(paths), text, count);
+    return button;
+  }
 
-    let laughs = null;
-    let problem = "לא הצלחנו לספור את הצחוק. נסו שוב.";
-    try {
-      const { res, data } = await api("/api/laugh", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
-      });
-      if (res.ok && Number.isInteger(data.laughs)) laughs = data.laughs;
-      else if (typeof data.error === "string" && data.error) problem = data.error;
-    } catch (err) {
-      console.error(err);
+  function createVote(id) {
+    const box = document.createElement("div");
+    box.className = "vote";
+    box.dataset.id = id;
+    const row = document.createElement("div");
+    row.className = "vote-row";
+    const like = voteButton("like", "אהבתי", THUMB_UP);
+    const dislike = voteButton("dislike", "לא אהבתי", THUMB_DOWN);
+    like.addEventListener("click", () => onVote(id, 1, box));
+    dislike.addEventListener("click", () => onVote(id, -1, box));
+    const error = document.createElement("p");
+    error.className = "vote-error";
+    error.setAttribute("role", "status");
+    error.hidden = true;
+    row.append(like, dislike);
+    box.append(row, error);
+    paintVote(box);
+    return box;
+  }
+
+  function paintVote(box) {
+    const id = box.dataset.id;
+    const state = voteState.get(id) ?? { likes: 0, dislikes: 0, my_vote: 0 };
+    const [like, dislike] = box.querySelectorAll(".vote-btn");
+    like.querySelector(".vote-count").textContent = String(state.likes);
+    dislike.querySelector(".vote-count").textContent = String(state.dislikes);
+    like.setAttribute("aria-pressed", String(state.my_vote === 1));
+    dislike.setAttribute("aria-pressed", String(state.my_vote === -1));
+    like.disabled = dislike.disabled = busy.has(id);
+  }
+
+  function voteBoxes(id) {
+    return [...document.querySelectorAll(".vote")].filter((box) => box.dataset.id === id);
+  }
+
+  function paintAll(id) {
+    for (const box of voteBoxes(id)) paintVote(box);
+  }
+
+  function showVoteError(id, box, text) {
+    for (const other of voteBoxes(id)) other.querySelector(".vote-error").hidden = true;
+    const target = box?.isConnected ? box : voteBoxes(id).find((b) => !b.closest("[hidden]"));
+    if (!target || !text) return;
+    const error = target.querySelector(".vote-error");
+    error.textContent = text;
+    error.hidden = false;
+  }
+
+  function onVote(id, value, box) {
+    if (busy.has(id)) return;
+    // A guest is asked to sign in, and the vote is sent right after.
+    if (!signedIn()) {
+      pendingVote = { id, value };
+      openLogin(NEED_ACCOUNT);
+      return;
     }
+    const mine = voteState.get(id)?.my_vote ?? 0;
+    sendVote(id, mine === value ? 0 : value, box);
+  }
 
-    // The user may have moved on to a new joke while this was in flight.
-    if (id === currentJokeId) {
-      if (laughs === null) {
-        laugh.disabled = false;
-        laughError.textContent = problem;
-        laughError.hidden = false;
-      } else {
-        laughCount.textContent = String(laughs);
+  async function sendVote(id, value, box) {
+    busy.add(id);
+    showVoteError(id, box, "");
+    paintAll(id);
+
+    const job = (async () => {
+      let problem = VOTE_ERROR;
+      try {
+        const { res, data } = await api("/api/vote", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id, value }),
+        });
+        if (res.ok && [data.likes, data.dislikes, data.my_vote].every(Number.isInteger)) {
+          voteState.set(id, { likes: data.likes, dislikes: data.dislikes, my_vote: data.my_vote });
+          return true;
+        }
+        if (typeof data.error === "string" && data.error) problem = data.error;
+      } catch (err) {
+        console.error(err);
       }
+      busy.delete(id);
+      paintAll(id);
+      showVoteError(id, box, problem);
+      return false;
+    })();
+
+    inflight.set(id, job);
+    const ok = await job;
+    inflight.delete(id);
+    busy.delete(id);
+    paintAll(id);
+    if (ok) dropUnliked(id);
+  }
+
+  // In "אהבתי", a joke that is no longer liked leaves the list.
+  function dropUnliked(id) {
+    if (voteState.get(id)?.my_vote === 1) return;
+    const { list } = lists.liked;
+    for (const item of [...list.children]) {
+      if (item.dataset.id === id) item.remove();
     }
-    if (laughs !== null) loadTop();
-  });
+    if (currentView === "liked" && signedIn() && list.children.length === 0) {
+      setListStatus("liked", "empty");
+    }
+  }
+
+  // ---- Lists: community and liked ----
+
+  const EMPTY = {
+    new: "עוד אין בדיחות. בקשו את הראשונה!",
+    top: "עוד אף בדיחה לא קיבלה אהבתי. אולי שלכם תהיה הראשונה?",
+    liked: "עוד לא אהבתם אף בדיחה. בקהילה יש מאיפה לבחור.",
+  };
+
+  function setListStatus(name, kind, text = "") {
+    const { status, retry } = lists[name];
+    const mode = name === "liked" ? "liked" : communityMode;
+    status.classList.toggle("is-error", kind === "error");
+    status.textContent = kind === "loading" ? "טוען..." : kind === "empty" ? EMPTY[mode] : text;
+    status.hidden = kind === "ready";
+    retry.hidden = kind !== "error";
+  }
+
+  function card(joke, rank) {
+    const item = document.createElement("li");
+    item.className = "card";
+    item.dataset.id = joke.id;
+
+    if (rank) {
+      const badge = document.createElement("span");
+      badge.className = `rank rank-${rank <= 3 ? rank : "n"}`;
+      badge.textContent = String(rank);
+      badge.setAttribute("aria-label", `מקום ${rank}`);
+      item.append(badge);
+    }
+
+    const text = document.createElement("p");
+    text.className = "card-text";
+    text.textContent = joke.text;
+
+    const meta = document.createElement("div");
+    meta.className = "card-meta";
+    if (typeof joke.topic === "string" && joke.topic.trim()) {
+      const chip = document.createElement("span");
+      chip.className = "chip";
+      chip.textContent = joke.topic.trim();
+      meta.append(chip);
+    }
+    const byline = document.createElement("span");
+    byline.className = "byline";
+    byline.textContent = joke.author_name ? `של ${joke.author_name}` : "בדיחה אנונימית";
+    meta.append(byline);
+
+    item.append(text, meta, createVote(joke.id));
+    return item;
+  }
+
+  async function loadList(name) {
+    const request = ++listRequest[name];
+    const { list } = lists[name];
+    const isCurrent = () => request === listRequest[name];
+
+    if (name === "liked") {
+      await authReady;
+      if (!isCurrent()) return;
+      if (!signedIn()) {
+        likedLocked.hidden = false;
+        list.replaceChildren();
+        setListStatus(name, "ready");
+        return;
+      }
+      likedLocked.hidden = true;
+    }
+
+    list.replaceChildren();
+    setListStatus(name, "loading");
+
+    // Let a vote that is on its way land first, so the list is not older than it.
+    await Promise.allSettled([...inflight.values()]);
+    if (!isCurrent()) return;
+
+    const mode = name === "liked" ? "liked" : communityMode;
+    try {
+      const { res, data } = await api(`/api/feed?mode=${mode}`);
+      if (!isCurrent()) return;
+      if (res.ok && Array.isArray(data.jokes)) {
+        for (const joke of data.jokes) {
+          voteState.set(joke.id, { likes: joke.likes, dislikes: joke.dislikes, my_vote: joke.my_vote });
+        }
+        list.replaceChildren(...data.jokes.map((joke, i) => card(joke, mode === "top" ? i + 1 : 0)));
+        for (const joke of data.jokes) paintAll(joke.id);
+        setListStatus(name, data.jokes.length ? "ready" : "empty");
+        return;
+      }
+      if (name === "liked" && !signedIn()) return loadList("liked");
+      setListStatus(name, "error", typeof data.error === "string" && data.error ? data.error : LIST_ERROR);
+    } catch (err) {
+      console.error(err);
+      if (isCurrent()) setListStatus(name, "error", LIST_ERROR);
+    }
+  }
+
+  function setCommunityMode(mode) {
+    communityMode = mode;
+    sortNew.setAttribute("aria-pressed", String(mode === "new"));
+    sortTop.setAttribute("aria-pressed", String(mode === "top"));
+    loadList("community");
+  }
+
+  sortNew.addEventListener("click", () => communityMode !== "new" && setCommunityMode("new"));
+  sortTop.addEventListener("click", () => communityMode !== "top" && setCommunityMode("top"));
+  lists.community.retry.addEventListener("click", () => loadList("community"));
+  lists.liked.retry.addEventListener("click", () => loadList("liked"));
+  likedLogin.addEventListener("click", () => openLogin(NEED_ACCOUNT_LIKED));
+
+  // ---- Tabs: each one is a # address, so the phone's back button moves between them ----
+
+  function route(fromHashChange) {
+    const name = location.hash.slice(1);
+    const view = VIEWS.includes(name) ? name : "joke";
+    const changed = view !== currentView;
+    currentView = view;
+
+    for (const key of VIEWS) views[key].hidden = key !== view;
+    for (const tab of tabs) {
+      if (tab.dataset.view === view) tab.setAttribute("aria-current", "page");
+      else tab.removeAttribute("aria-current");
+    }
+
+    if (view !== "joke") loadList(view);
+    if (changed && fromHashChange) {
+      window.scrollTo(0, 0);
+      views[view].querySelector("h1")?.focus({ preventScroll: true });
+    }
+  }
+
+  window.addEventListener("hashchange", () => route(true));
+
+  // Sign in or out: the open list is loaded again, so my votes show or go away.
+  function onSession(session) {
+    renderAccount(session);
+    const userId = session?.user?.id ?? null;
+    if (userId === lastUserId) return;
+    const first = lastUserId === undefined;
+    lastUserId = userId;
+    if (first) return;
+
+    if (!userId) {
+      for (const state of voteState.values()) state.my_vote = 0;
+      for (const box of document.querySelectorAll(".vote")) paintVote(box);
+    }
+    if (currentView !== "joke") loadList(currentView);
+  }
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -642,7 +1109,10 @@
     showError(loginError, "");
   }
 
-  function openLogin() {
+  function openLogin(reason = "") {
+    loginReason.textContent = reason;
+    loginReason.hidden = !reason;
+    if (loginDialog.open) return;
     passwordInput.value = "";
     showError(loginError, "");
     loginSubmit.disabled = false;
@@ -672,8 +1142,13 @@
   }
 
   accountBtn.addEventListener("click", () => {
-    if (Auth.session()) openAccount();
+    if (signedIn()) openAccount();
     else openLogin();
+  });
+
+  // Closing the sign-in window without signing in drops the vote that waited for it.
+  loginDialog.addEventListener("close", () => {
+    if (!signedIn()) pendingVote = null;
   });
 
   modeSignin.addEventListener("click", () => setLoginMode("signin"));
@@ -697,8 +1172,13 @@
       return;
     }
     passwordInput.value = "";
+    const waiting = pendingVote;
+    pendingVote = null;
     loginDialog.close();
     renderAccount(Auth.session());
+    // The vote a guest clicked before signing in is sent now. It is the choice
+    // itself, not a toggle: the guest could not see an earlier vote of theirs.
+    if (waiting) sendVote(waiting.id, waiting.value, null);
   });
 
   logoutBtn.addEventListener("click", async () => {
@@ -749,13 +1229,11 @@
   }
 
   if (window.Auth) {
-    Auth.onChange((session) => renderAccount(session));
-    Auth.ready()
-      .then(() => renderAccount(Auth.session()))
-      .catch((err) => console.error(err));
+    Auth.onChange((session) => onSession(session));
+    authReady.then(() => onSession(Auth.session()));
   }
 
-  loadTop();
+  route(false);
 
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("/sw.js").catch((err) => console.error(err));

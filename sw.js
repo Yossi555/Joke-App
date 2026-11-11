@@ -1,5 +1,5 @@
 // Network-first. Requests to /api, non-GET requests and other origins are never touched.
-const CACHE = "joke-v3";
+const CACHE = "joke-v4";
 
 const PRECACHE = [
   "/",
