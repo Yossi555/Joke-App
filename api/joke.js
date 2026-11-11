@@ -1,4 +1,5 @@
-import { getSupabase } from "../lib/supabase.js";
+import { authRequired, json, readJson } from "../lib/http.js";
+import { displayName, getSupabase, getUserFromRequest, hasToken } from "../lib/supabase.js";
 
 const MAX_TOPIC = 100;
 const SAVE_TIMEOUT_MS = 5000;
@@ -26,13 +27,6 @@ const MESSAGES = {
   timeout: "הבדיחה מתעכבת. נסו שוב.",
   general: "לא הצלחנו להביא בדיחה. נסו שוב.",
 };
-
-function json(body, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { "Content-Type": "application/json; charset=utf-8" },
-  });
-}
 
 function messageFor(status, error) {
   const code = error?.code;
@@ -64,11 +58,16 @@ function extractText(data) {
 }
 
 // A failed save must never cost the user the joke, so this always resolves.
-async function saveJoke(topic, text) {
+async function saveJoke(topic, text, user, authorName) {
   try {
     const { data, error } = await getSupabase()
       .from("jokes")
-      .insert({ topic: topic || null, text })
+      .insert({
+        topic: topic || null,
+        text,
+        user_id: user?.id ?? null,
+        author_name: user ? authorName : null,
+      })
       .select("id")
       .single()
       .abortSignal(AbortSignal.timeout(SAVE_TIMEOUT_MS));
@@ -86,15 +85,23 @@ export default {
       return json({ error: MESSAGES.notPost }, 405);
     }
 
-    let topic = "";
-    try {
-      const body = await request.json();
-      if (typeof body?.topic === "string") {
-        topic = body.topic.trim().slice(0, MAX_TOPIC);
+    const body = await readJson(request);
+    const topic = typeof body?.topic === "string" ? body.topic.trim().slice(0, MAX_TOPIC) : "";
+
+    // Who is asking is settled before OpenAI is called, so a bad token costs nothing.
+    let user = null;
+    let canSave = true;
+    if (hasToken(request)) {
+      try {
+        user = await getUserFromRequest(request, getSupabase());
+      } catch (err) {
+        // Supabase is down: the joke still comes, without saving.
+        console.error(`joke auth error: ${err?.message ?? "unknown"}`);
+        canSave = false;
       }
-    } catch {
-      topic = "";
+      if (canSave && !user) return authRequired();
     }
+    const authorName = user ? displayName(user) : null;
 
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
@@ -103,7 +110,7 @@ export default {
     }
 
     const model = process.env.OPENAI_MODEL?.trim() || DEFAULT_MODEL;
-    console.log(`joke request: topic="${topic}" model=${model}`);
+    console.log(`joke request: topic="${topic}" model=${model} user=${user ? "yes" : "guest"}`);
 
     let res;
     try {
@@ -152,7 +159,7 @@ export default {
       return json({ error: MESSAGES.general }, 502);
     }
 
-    const id = await saveJoke(topic, joke);
-    return json({ joke, id });
+    const id = canSave ? await saveJoke(topic, joke, user, authorName) : null;
+    return json({ joke, id, author_name: authorName });
   },
 };
