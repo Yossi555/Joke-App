@@ -16,17 +16,26 @@
 - `.claude/settings.json` חוסם את הקריאה של .env ושל .env.*.
 - `.env.example` מכיל רק את השורות `OPENAI_API_KEY=` ו-`SUPABASE_SECRET_KEY=`, בלי ערכים ובלי הערות.
 - המפתח הסודי של Supabase שמור אצלי ב-Vercel (Secret, ב-Production וב-Preview). אני שם אותו בעצמי, ו-Claude לא מבקש אותו.
+- המפתח הציבורי, `SUPABASE_PUBLISHABLE_KEY`, שמור ב-Vercel מסוג Config, בכל הסביבות. הוא לא סוד: Claude יכול להביא אותו דרך המחבר, עם `get_publishable_keys`. הוא לא נכנס ל-.env.example.
+- ה-Client Secret של Google (בונוס) נשאר רק בדשבורד של Supabase. לא בקוד, לא בריפו ולא ב-Vercel.
 - `.gitignore` מתעלם מ-.env, מ-.env.*, מ-.vercel ומ-node_modules, עם החריגה `!.env.example`.
 
 ## שמירה: Supabase
-- הנתונים נשמרים ב-Supabase, בטבלה `public.jokes`.
-- רק הפונקציות בתיקיית `api/` מדברות עם Supabase, דרך הלקוח היחיד ב-`lib/supabase.js`. הכתובת מ-`process.env.SUPABASE_URL`, והמפתח מ-`process.env.SUPABASE_SECRET_KEY`.
-- הדף מדבר רק עם `/api`. אין בו לקוח של Supabase, כתובת של Supabase או מפתח.
-- הטבלה נעולה לשרת: RLS מופעל בלי אף policy, והרשאות ל-`service_role` בלבד.
-- ה-SQL נשמר גם ב-`db/`, ומוצג לי לפני כל הרצה.
+- הנתונים נשמרים ב-Supabase, בטבלה `public.jokes`, ומ-Milestone 6 גם ב-`public.votes`.
+- רק הפונקציות בתיקיית `api/` מדברות עם הטבלאות, דרך הלקוח היחיד ב-`lib/supabase.js`. הכתובת מ-`process.env.SUPABASE_URL`, והמפתח מ-`process.env.SUPABASE_SECRET_KEY`.
+- הדף מדבר רק עם `/api`. הוא לא קורא ולא כותב אף טבלה, ואין בו כתובת של Supabase או מפתח בקוד.
+- כל טבלה נעולה לשרת: RLS מופעל בלי אף policy, `revoke all` מ-`anon` ומ-`authenticated`, והרשאות ל-`service_role` בלבד. כל פונקציה בבסיס הנתונים: `revoke execute` מ-`public`, `anon` ו-`authenticated`, ו-`grant execute` ל-`service_role`.
+- ה-SQL נשמר קודם כקובץ ב-`db/`, מוצג לי, ורץ דרך המחבר רק אחרי אישור. אחרי ההרצה: `get_advisors`, הסבר בעברית, ועצירה.
+
+## כניסה: Supabase Auth
+- מ-Milestone 5 הכניסה ב-Supabase Auth, ברמה 3 לפי course-stack.md: משתמשים אמיתיים עם הרשמה עצמית, במייל וסיסמה. כניסה עם Google היא בונוס.
+- הספרייה של Supabase בדפדפן, ב-`auth.js`, משמשת רק לכניסה: הרשמה, כניסה, התנתקות ושמירת הטוקן. הכתובת והמפתח הציבורי מגיעים מ-`/api/config`.
+- הדף שולח את הטוקן בכותרת `Authorization: Bearer <token>`, בכל קריאה ל-`/api`.
+- הפונקציות מזהות משתמש רק עם `supabase.auth.getUser(token)`. מזהה משתמש או שם שמגיעים מהדף, לא נחשבים.
+- כל טקסט מהשרת או מהמשתמש מוצג עם textContent, אף פעם לא innerHTML. אין polling.
 
 ## מבנה התיקיות
-- `spec/`: שבעת מסמכי הספק (PRD, MVP, product-10-definitions, MILESTONES, ARCHITECTURE, tech-stack, DESIGN), ואיתם course-stack.md ותמונות הייחוס (wireframes, mockups, style-guide).
+- `spec/`: שבעת מסמכי הספק (PRD, MVP, product-10-definitions, MILESTONES, ARCHITECTURE, tech-stack, DESIGN), ואיתם course-stack.md, ‏milestones-5-6.md (המקור של Milestones 5 ו-6 ושל הבונוס) ותמונות הייחוס (wireframes, mockups, style-guide, mockups-users).
 - `spec/plans/`: תיעוד לכל מיילסטון אחרי התכנון והבנייה: `milestone-1.md`, `milestone-2.md` וכן הלאה. גם השיחות נקראות באותם שמות.
 - `assets/`: נשארת בשורש, כי האפליקציה משתמשת בה. משתמשים בקבצים כמו שהם.
 - הקוד בשורש, לפי סעיף 7 ב-spec/ARCHITECTURE.md.
